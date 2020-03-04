@@ -609,7 +609,6 @@ nssm set kube-proxy AppEnvironmentExtra KUBE_NETWORK=$env:KUBE_NETWORK
 
 # Determine our base arguments for the services.
 $KubeletArguments = @{
-  "allow-privileged"="true";
   "anonymous-auth"="false";
   "authorization-mode"="Webhook";
   "cgroups-per-qos"="false";
