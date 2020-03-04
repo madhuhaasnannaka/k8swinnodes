@@ -530,9 +530,6 @@ New-Item -Path $env:DOCKER_CONFIG -ItemType directory
 Invoke-Expression -Command (Get-ECRLoginCommand -Region $env:AwsRegion).Command
 [System.Environment]::SetEnvironmentVariable('DOCKER_CONFIG', $env:DOCKER_CONFIG, [System.EnvironmentVariableTarget]::Machine)
 
-# Run install docker again, this time with servercore
-Install-DockerImages -WithServerCore $true
-
 ########################################################################################################################
 # (3) Careful Execution of Kubernetes Executables and Networking
 ########################################################################################################################
@@ -681,6 +678,9 @@ nssm set kube-proxy AppParameters (ConvertTo-AppParameters -AppParameters $KubeP
 # Clear the HNS policy list before starting kube-proxy.
 Get-HnsPolicyList | Remove-HnsPolicyList
 nssm start kube-proxy
+
+# Run install docker again, this time with servercore
+Install-DockerImages -WithServerCore $true
 
 # Remove the NotReady taint so that pods can be scheduled.
 kubectl --kubeconfig="$KubernetesDirectory/kconfigs/kubelet.kcfg" taint nodes $env:NODE_NAME "node.kubernetes.io/NotReady-"
