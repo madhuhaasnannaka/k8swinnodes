@@ -502,11 +502,11 @@ $NodeTaints = @(Get-NodeTaintsFromTags)
 $NodeLabels = @(Get-NodeLabelsFromTags)
 
 # Add our own labels and taints.
-$NodeLabels += @(
-  "kubernetes.io/os-version=$($ComputerInfo.WindowsVersion)",
-  "kubernetes.io/role=node",
-  "node-role.kubernetes.io/node="
-)
+# Disabled
+# $NodeLabels += @(
+#   "kubernetes.io/os-version=$($ComputerInfo.WindowsVersion)",
+#   "kubernetes.io/role=node"
+# )
 
 if($AutoGenerateWindowsTaints) {
   $NodeTaints += @(
