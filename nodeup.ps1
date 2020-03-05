@@ -24,20 +24,9 @@ function Get-AwsTag($TagName) { return ($script:Ec2Tags | Where-Object {$_.Key -
 function Install-DockerImages {
   param (
     [parameter(Mandatory=$false)] $WindowsVersion = $script:ComputerInfo.WindowsVersion,
-    [parameter(Mandatory=$false)] $WithServerCore = $false
   )
 
   Start-Job -Name install-docker -ScriptBlock {
-    $WindowsVersion = $args[0]
-    $WithServerCore = $args[1]
-
-    # Pull ready-made Windows containers of the given Windows version.
-    docker pull "mcr.microsoft.com/windows/nanoserver:$WindowsVersion"
-
-    # Tag the docker images.
-    docker tag "mcr.microsoft.com/windows/nanoserver:$WindowsVersion" windows/nanoserver:latest
-    docker tag "mcr.microsoft.com/windows/nanoserver:$WindowsVersion" microsoft/nanoserver:latest
-
     # Build our infrastructure image.
     $BuildDir = Join-Path -Path (Get-Item Env:TEMP).Value -ChildPath "docker"
     New-Item -Path $BuildDir -ItemType directory
@@ -45,13 +34,6 @@ function Install-DockerImages {
     
     Set-Content -Path $BuildDir/Dockerfile -Value $DockerfileContents
     docker build -t kubeletwin/pause -f $BuildDir/Dockerfile $BuildDir
-
-    # Pull the servercore image if we're instructed to.
-    if($WithServerCore) {
-      docker pull "mcr.microsoft.com/windows/servercore:$WindowsVersion"
-      docker tag "mcr.microsoft.com/windows/servercore:$WindowsVersion" windows/servercore:latest
-      docker tag "mcr.microsoft.com/windows/servercore:$WindowsVersion" microsoft/servercore:latest
-    }
 
     Remove-Item -Path $BuildDir -Recurse
   } -ArgumentList $WindowsVersion,$WithServerCore
@@ -471,7 +453,7 @@ Read-S3Object `
 
 Install-AwsKubernetesFlannel -InstallationDirectory $KubernetesDirectory
 Install-AwsKubernetesNode -KubernetesVersion $KubernetesVersion -InstallationDirectory $KubernetesDirectory
-Install-DockerImages
+Install-DockerImages -WindowsVersion 1909
 Install-NSSM -InstallationDirectory $KubernetesDirectory
 
 # Wait for all installation jobs to finish.
