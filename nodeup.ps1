@@ -3,6 +3,7 @@
 # There are a few pre-requisites in order for this script to work, as well as a few "best practices", all of which
 # will be explained down.
 param(
+  [parameter(Mandatory=$true)] [switch] $KopsStateStoreRegion = "eu-west-1",
   [parameter(Mandatory=$false)] [switch] $AutoGenerateWindowsTaints = $true
 )
 
@@ -162,7 +163,7 @@ function New-KubernetesConfigurations {
   New-Item $DestinationBaseDir/issued/ca -ItemType Directory -ErrorAction SilentlyContinue
   $S3ObjectKey = "$KopsStateStorePrefix/pki/issued/ca/keyset.yaml"
   $LocalCertificateAuthorityFile = "$DestinationBaseDir/ca-keyset.yaml"
-  Read-S3Object -BucketName $KopsStateStoreBucket -Key $S3ObjectKey -File $LocalCertificateAuthorityFile -Region eu-west-1
+  Read-S3Object -BucketName $KopsStateStoreBucket -Key $S3ObjectKey -File $LocalCertificateAuthorityFile -Region $script:KopsStateStoreRegion
 
   # Load the certificate authority data.
   $CertificateAuthorityData = ((Get-Content $LocalCertificateAuthorityFile) | ConvertFrom-Yaml)
@@ -175,7 +176,7 @@ function New-KubernetesConfigurations {
     New-Item $DestinationBaseDir/private/$KubernetesUser -ItemType Directory -ErrorAction SilentlyContinue
     $S3ObjectKey = "$KopsStateStorePrefix/pki/private/$KubernetesUser/keyset.yaml"
     $LocalUserFile = "$DestinationBaseDir/$KubernetesUser-keyset.yaml"
-    Read-S3Object -BucketName $KopsStateStoreBucket -Key $S3ObjectKey -File $LocalUserFile -Region eu-west-1
+    Read-S3Object -BucketName $KopsStateStoreBucket -Key $S3ObjectKey -File $LocalUserFile -Region $script:KopsStateStoreRegion
 
     # Load the user's secrets.
     $KuberenetesUserData = ((Get-Content $LocalUserFile) | ConvertFrom-Yaml)
@@ -435,7 +436,7 @@ Read-S3Object `
   -BucketName "$KopsStateStoreBucket" `
   -Key "$KopsStateStorePrefix/cluster.spec" `
   -File $KopsClusterSpecificationFile `
-  -Region eu-west-1
+  -Region $script:KopsStateStoreRegion
 
 Get-Job -Name "yaml-install" | Wait-Job
 Import-Module powershell-yaml
@@ -466,7 +467,7 @@ Read-S3Object `
   -BucketName "$KopsStateStoreBucket" `
   -Key "$KopsStateStorePrefix/serviceaccount/flannel.kcfg" `
   -File "$KubernetesDirectory/kconfigs/flannel.kcfg" `
-  -Region eu-west-1
+  -Region $script:KopsStateStoreRegion
 
 Install-AwsKubernetesFlannel -InstallationDirectory $KubernetesDirectory
 Install-AwsKubernetesNode -KubernetesVersion $KubernetesVersion -InstallationDirectory $KubernetesDirectory
