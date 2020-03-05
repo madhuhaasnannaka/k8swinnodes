@@ -22,6 +22,7 @@ $systemSid = Get-UserSID -WellKnownSidType ([System.Security.Principal.WellKnown
 $ConfirmPreference = "None"
 
 Repair-FilePermission -Owners $adminsSid,$systemSid $AuthorizedKeys -FullAccessNeeded $systemSid
+New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -PropertyType String -Force
 
 Remove-Item c:/OpenSSHUtils.psm1
 Start-Service sshd
