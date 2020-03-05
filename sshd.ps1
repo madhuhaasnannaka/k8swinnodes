@@ -19,8 +19,9 @@ ipmo c:/OpenSSHUtils.psm1
 
 $adminsSid = Get-UserSID -WellKnownSidType ([System.Security.Principal.WellKnownSidType]::BuiltinAdministratorsSid)
 $systemSid = Get-UserSID -WellKnownSidType ([System.Security.Principal.WellKnownSidType]::LocalSystemSid)
+$ConfirmPreference = "None"
 
-Repair-FilePermission -Owners $adminsSid,$systemSid $AuthorizedKeys -FullAccessNeeded $systemSid -Confirm
+Repair-FilePermission -Owners $adminsSid,$systemSid $AuthorizedKeys -FullAccessNeeded $systemSid
 
 Remove-Item c:/OpenSSHUtils.psm1
 Start-Service sshd
