@@ -1,0 +1,9 @@
+PubkeyAuthentication yes
+PasswordAuthentication no
+Subsystem	sftp	sftp-server.exe
+
+DenyUsers local\*
+AllowGroups administrators
+
+Match Group administrators
+       AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys
