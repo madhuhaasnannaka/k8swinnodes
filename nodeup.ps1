@@ -680,9 +680,6 @@ nssm set kube-proxy AppParameters (ConvertTo-AppParameters -AppParameters $KubeP
 Get-HnsPolicyList | Remove-HnsPolicyList
 nssm start kube-proxy
 
-# Run install docker again, this time with servercore
-Install-DockerImages -WithServerCore $true
-
 # Remove the NotReady taint so that pods can be scheduled.
 kubectl --kubeconfig="$KubernetesDirectory/kconfigs/kubelet.kcfg" taint nodes $env:NODE_NAME "node.kubernetes.io/NotReady-"
 
