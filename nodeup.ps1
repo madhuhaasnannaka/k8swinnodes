@@ -4,13 +4,14 @@
 # will be explained down.
 param(
   [parameter(Mandatory=$true)] $KopsStateStoreRegion = "eu-west-1",
-  [parameter(Mandatory=$false)] [switch] $AutoGenerateWindowsTaints = $false
+  [parameter(Mandatory=$false)] [switch] $AutoGenerateWindowsTaints = $false,
+  [parameter(Mandatory=$false)] $KubernetesDrive = "c:"
 )
 
 # Define some of our constants.
 $global:progressPreference = 'silentlyContinue'
 $AWSSelfServiceUri = "169.254.169.254/latest"
-$KubernetesDirectory = "c:/k"
+$KubernetesDirectory = "$KubernetesDrive/k"
 $KopsConfigBaseRegex = "^ConfigBase: s3://(?<bucket>[^/]+)/(?<prefix>.+)$"
 
 ########################################################################################################################
@@ -139,6 +140,7 @@ function New-KubernetesConfigurations {
     [parameter(Mandatory=$true)] $KopsStateStoreBucket,
     [parameter(Mandatory=$true)] $KopsStateStorePrefix,
     [parameter(Mandatory=$true)] $KubernetesMasterInternalName,
+    [parameter(Mandatory=$true)] $KopsStateStoreRegion,
     [parameter(Mandatory=$false)] [string[]] $KubernetesUsers
   )
 
@@ -146,7 +148,7 @@ function New-KubernetesConfigurations {
   New-Item $DestinationBaseDir/issued/ca -ItemType Directory -ErrorAction SilentlyContinue
   $S3ObjectKey = "$KopsStateStorePrefix/pki/issued/ca/keyset.yaml"
   $LocalCertificateAuthorityFile = "$DestinationBaseDir/ca-keyset.yaml"
-  Read-S3Object -BucketName $KopsStateStoreBucket -Key $S3ObjectKey -File $LocalCertificateAuthorityFile -Region $script:KopsStateStoreRegion
+  Read-S3Object -BucketName $KopsStateStoreBucket -Key $S3ObjectKey -File $LocalCertificateAuthorityFile -Region $KopsStateStoreRegion
 
   # Load the certificate authority data.
   $CertificateAuthorityData = ((Get-Content $LocalCertificateAuthorityFile) | ConvertFrom-Yaml)
@@ -159,7 +161,7 @@ function New-KubernetesConfigurations {
     New-Item $DestinationBaseDir/private/$KubernetesUser -ItemType Directory -ErrorAction SilentlyContinue
     $S3ObjectKey = "$KopsStateStorePrefix/pki/private/$KubernetesUser/keyset.yaml"
     $LocalUserFile = "$DestinationBaseDir/$KubernetesUser-keyset.yaml"
-    Read-S3Object -BucketName $KopsStateStoreBucket -Key $S3ObjectKey -File $LocalUserFile -Region $script:KopsStateStoreRegion
+    Read-S3Object -BucketName $KopsStateStoreBucket -Key $S3ObjectKey -File $LocalUserFile -Region $KopsStateStoreRegion
 
     # Load the user's secrets.
     $KuberenetesUserData = ((Get-Content $LocalUserFile) | ConvertFrom-Yaml)
@@ -385,7 +387,7 @@ $AwsRegion = ((wget "http://$script:AWSSelfServiceUri/dynamic/instance-identity/
 $env:NODE_NAME = (wget "http://$script:AWSSelfServiceUri/meta-data/local-hostname" -UseBasicParsing).Content
 
 # Extract our kops configuration base from the user-data.
-$KopsUserDataFile = "c:/userdata.txt"
+$KopsUserDataFile = "$KubernetesDrive/userdata.txt"
 $KopsUserData = (wget "http://$script:AWSSelfServiceUri/user-data" -UseBasicParsing).Content
 $KopsUserData = [System.Text.Encoding]::ASCII.GetString($KopsUserData)
 Set-Content -Path $KopsUserDataFile -Value $KopsUserData
@@ -411,7 +413,7 @@ Read-S3Object `
   -BucketName "$KopsStateStoreBucket" `
   -Key "$KopsStateStorePrefix/cluster.spec" `
   -File $KopsClusterSpecificationFile `
-  -Region $script:KopsStateStoreRegion
+  -Region $KopsStateStoreRegion
 
 Get-Job -Name "yaml-install" | Wait-Job
 Import-Module powershell-yaml
@@ -435,6 +437,7 @@ New-KubernetesConfigurations `
   -KopsStateStoreBucket $KopsStateStoreBucket `
   -KopsStateStorePrefix $KopsStateStorePrefix `
   -KubernetesMasterInternalName $KubeClusterInternalApi `
+  -KopsStateStoreRegion $KopsStateStoreRegion `
   -KubernetesUsers kubelet,kube-proxy
 
 # Download the pre-made flannel ServiceAccount Kubernetes configuaration file.
@@ -442,11 +445,10 @@ Read-S3Object `
   -BucketName "$KopsStateStoreBucket" `
   -Key "$KopsStateStorePrefix/serviceaccount/flannel.kcfg" `
   -File "$KubernetesDirectory/kconfigs/flannel.kcfg" `
-  -Region $script:KopsStateStoreRegion
+  -Region $KopsStateStoreRegion
 
 Install-AwsKubernetesFlannel -InstallationDirectory $KubernetesDirectory
 Install-AwsKubernetesNode -KubernetesVersion $KubernetesVersion -InstallationDirectory $KubernetesDirectory
-Install-DockerImages
 Install-NSSM -InstallationDirectory $KubernetesDirectory
 
 # Wait for all installation jobs to finish.
@@ -490,11 +492,13 @@ $NodeTaints = $NodeTaints -Join ""","""
 $NodeTaints = """$NodeTaints"""
 
 # Go ahead install Docker credentials for AWS.
-$env:DOCKER_CONFIG = "c:/.docker"
+$env:DOCKER_CONFIG = "$KubernetesDrive/.docker"
 New-Item -Path $env:DOCKER_CONFIG -ItemType directory
 Invoke-Expression -Command (Get-ECRLoginCommand -Region $env:AwsRegion).Command
 [System.Environment]::SetEnvironmentVariable('DOCKER_CONFIG', $env:DOCKER_CONFIG, [System.EnvironmentVariableTarget]::Machine)
 
+Install-DockerImages
+Get-Job | Wait-Job
 ########################################################################################################################
 # (3) Careful Execution of Kubernetes Executables and Networking
 ########################################################################################################################
@@ -559,7 +563,7 @@ foreach($Service in $Services) {
   nssm install $Service "$KubernetesDirectory/bin/$Service"
 
   # Setup logging for each service.
-  nssm set $Service AppStderr (Join-Path -Path "c:/" -ChildPath "$Service.log")
+  nssm set $Service AppStderr (Join-Path -Path "$KubernetesDrive/" -ChildPath "$Service.log")
 }
 
 # Set service dependencies.
