@@ -623,6 +623,8 @@ $KubeletConfig = @{
     "WinOverlay"=$true;
   };
   "resolveConf"="";
+  "cgroupsPerQOS"=$false;
+  "enforceNodeAllocatable"=@();
 }
 ConvertTo-Yaml $KubeletConfig | Set-Content -Path "$KubernetesDirectory/KubeletConfig.yaml"
 
