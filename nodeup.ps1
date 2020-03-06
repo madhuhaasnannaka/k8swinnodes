@@ -587,21 +587,51 @@ nssm set kube-proxy DependOnService kubelet flanneld
 nssm set flanneld AppEnvironmentExtra NODE_NAME=$env:NODE_NAME
 nssm set kube-proxy AppEnvironmentExtra KUBE_NETWORK=$env:KUBE_NETWORK
 
+$KubeletConfig = @{
+  "apiVersion"="kubelet.config.k8s.io/v1beta1";
+  "kind"="KubeletConfiguration";
+  "address"="0.0.0.0";
+  "port"="10250";
+  "readOnlyPort"="10255";
+  "authorization"=@{
+    "mode"="Webhook";
+    "webhook"=@{
+      "cacheAuthorizedTTL"="5m0s";
+      "cacheUnauthorizedTTL"="30s";
+    };
+  };
+  "authentication"=@{
+    "x509"=@{
+      "clientCAFile"="$KubernetesDirectory/kconfigs/issued/ca.crt";
+    };
+    "webhook"=@{
+      "enabled"="true";
+      "cacheTTL"="2m0s";
+    };
+    "anonymous"=@{
+      "enabled"="false";
+    };
+  };
+  "enableDebuggingHandlers"="true";
+  "clusterDomain"="$env:KubeDnsDomain";
+  "clusterDNS"=@(
+    "$env:KubeClusterDns"
+  );
+  "hairpinMode"="promiscuous-bridge";
+  "maxPods"="110";
+  "featureGates"=@{
+    "WinOverlay"="true";
+  };
+  "resolveConf"="";
+}
+ConvertTo-Yaml $KubernetesConfigData | Set-Content -Path "$KubernetesDirectory/KubeletConfig.yaml"
+
 # Determine our base arguments for the services.
 $KubeletArguments = @{
-  "anonymous-auth"="false";
-  "authorization-mode"="Webhook";
   "cgroups-per-qos"="false";
-  "client-ca-file"="$KubernetesDirectory/kconfigs/issued/ca.crt";
   "cloud-provider"="aws";
-  "cluster-dns"="$env:KubeClusterDns";
-  "cluster-domain"="$env:KubeDnsDomain";
   "cni-bin-dir"="$KubernetesDirectory/cni";
   "cni-conf-dir"="$KubernetesDirectory/cni/config";
-  "enable-debugging-handlers"="true";
-  "enforce-node-allocatable"="";
-  "feature-gates"="""WinOverlay=true""";
-  "hairpin-mode"="promiscuous-bridge";
   "hostname-override"="$env:NODE_NAME";
   "image-pull-progress-deadline"="20m";
   "kubeconfig"="$KubernetesDirectory/kconfigs/kubelet.kcfg";
@@ -612,8 +642,8 @@ $KubeletArguments = @{
   "pod-infra-container-image"="kubeletwin/pause";
   "register-schedulable"="true";
   "register-with-taints"="$NodeTaints";
-  "resolv-conf"="";
   "v"="6"
+  "config"="$KubernetesDirectory/KubeletConfig.yaml";
 }
 
 $FlannelArguments = @{
