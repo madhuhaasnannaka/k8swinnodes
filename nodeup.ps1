@@ -608,7 +608,7 @@ $KubeletConfig = @{
   "featureGates"=@{
     "WinOverlay"=$true;
   };
-  "resolveConf"="";
+  "resolvConf"="";
   "cgroupsPerQOS"=$false;
   "enforceNodeAllocatable"=@();
 }
