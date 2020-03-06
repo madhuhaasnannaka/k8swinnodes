@@ -1,12 +1,11 @@
-$PauseImageVersion = "1909"
-$WindowsVersions = @("1909")
+# Server containers needs to be on the same version as the host, so grab the version from the host before installing
+$ComputerInfo = (Get-ComputerInfo)
+$WindowsVersion = $ComputerInfo.WindowsVersion
 
-foreach($WindowsVersion in $WindowsVersions) {
-    docker pull "mcr.microsoft.com/windows/nanoserver:$WindowsVersion"
-    docker pull "mcr.microsoft.com/windows/servercore:$WindowsVersion"
+docker pull "mcr.microsoft.com/windows/nanoserver:$WindowsVersion"
+docker pull "mcr.microsoft.com/windows/servercore:$WindowsVersion"
 
-    docker tag "mcr.microsoft.com/windows/nanoserver:$WindowsVersion" windows/nanoserver:latest
-    docker tag "mcr.microsoft.com/windows/nanoserver:$WindowsVersion" microsoft/nanoserver:latest
-    docker tag "mcr.microsoft.com/windows/servercore:$WindowsVersion" windows/servercore:latest
-    docker tag "mcr.microsoft.com/windows/servercore:$WindowsVersion" microsoft/servercore:latest
-}
+docker tag "mcr.microsoft.com/windows/nanoserver:$WindowsVersion" windows/nanoserver:latest
+docker tag "mcr.microsoft.com/windows/nanoserver:$WindowsVersion" microsoft/nanoserver:latest
+docker tag "mcr.microsoft.com/windows/servercore:$WindowsVersion" windows/servercore:latest
+docker tag "mcr.microsoft.com/windows/servercore:$WindowsVersion" microsoft/servercore:latest
