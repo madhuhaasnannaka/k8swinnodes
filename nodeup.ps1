@@ -624,7 +624,7 @@ $KubeletConfig = @{
   };
   "resolveConf"="";
 }
-ConvertTo-Yaml $KubernetesConfigData | Set-Content -Path "$KubernetesDirectory/KubeletConfig.yaml"
+ConvertTo-Yaml $KubeletConfig | Set-Content -Path "$KubernetesDirectory/KubeletConfig.yaml"
 
 # Determine our base arguments for the services.
 $KubeletArguments = @{
