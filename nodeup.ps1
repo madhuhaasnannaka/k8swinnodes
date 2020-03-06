@@ -23,7 +23,7 @@ function Get-AwsTag($TagName) { return ($script:Ec2Tags | Where-Object {$_.Key -
 ########################################################################################################################
 function Install-DockerImages {
   param (
-    [parameter(Mandatory=$false)] $WindowsVersion = $script:ComputerInfo.WindowsVersion,
+    [parameter(Mandatory=$false)] $WindowsVersion = $script:ComputerInfo.WindowsVersion
   )
 
   Start-Job -Name install-docker -ScriptBlock {
