@@ -608,7 +608,6 @@ $KubeletConfig = @{
   "featureGates"=@{
     "WinOverlay"=$true;
   };
-  "resolvConf"="";
   "cgroupsPerQOS"=$false;
   "enforceNodeAllocatable"=@();
 }
@@ -629,8 +628,9 @@ $KubeletArguments = @{
   "pod-infra-container-image"="kubeletwin/pause";
   "register-schedulable"="true";
   "register-with-taints"="$NodeTaints";
-  "v"="6"
+  "v"="6";
   "config"="$KubernetesDirectory/KubeletConfig.yaml";
+  "resolv-conf"="";
 }
 
 $FlannelArguments = @{
