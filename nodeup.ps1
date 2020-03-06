@@ -105,8 +105,8 @@ function Install-AwsKubernetesFlannel {
       -OutFile "$InstallationDirectory/cni/win-overlay.exe"
 
     # Create directories needed for runtime.
-    New-Item -Path "$KubernetesDrive/etc/kube-flannel" -ItemType directory -ErrorAction Ignore
-    New-Item -Path "$KubernetesDrive/run/flannel" -ItemType directory -ErrorAction Ignore
+    New-Item -Path "$script:KubernetesDrive/etc/kube-flannel" -ItemType directory -ErrorAction Ignore
+    New-Item -Path "$script:KubernetesDrive/run/flannel" -ItemType directory -ErrorAction Ignore
     Remove-Item -Path $DownloadDirectory -Recurse
   } -ArgumentList $DownloadDirectory,$InstallationDirectory,$DownloadBranch,$FlanneldVersion
 }
@@ -237,7 +237,7 @@ function Update-NetConfigurationFile {
     [parameter(Mandatory=$false)] $KubeClusterCidr = $env:KubeClusterCidr
   )
 
-  $NetConfigurationFile = "$KubernetesDrive/etc/kube-flannel/net-conf.json"
+  $NetConfigurationFile = "$script:KubernetesDrive/etc/kube-flannel/net-conf.json"
 
   $Configuration = @{
     "Network"="$KubeClusterCidr"
