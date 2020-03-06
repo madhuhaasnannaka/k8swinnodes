@@ -27,7 +27,7 @@ function Install-DockerImages {
     [parameter(Mandatory=$false)] $WindowsVersion = $script:ComputerInfo.WindowsVersion
   )
 
-  Start-Job -Name install-docker -ScriptBlock {
+  # Start-Job -Name install-docker -ScriptBlock {
     docker pull "mcr.microsoft.com/windows/nanoserver:$WindowsVersion"
     # Build our infrastructure image.
     $BuildDir = Join-Path -Path (Get-Item Env:TEMP).Value -ChildPath "docker"
@@ -37,8 +37,8 @@ function Install-DockerImages {
     Set-Content -Path $BuildDir/Dockerfile -Value $DockerfileContents
     docker build -t kubeletwin/pause -f $BuildDir/Dockerfile $BuildDir
 
-    Remove-Item -Path $BuildDir -Recurse
-  } -ArgumentList $WindowsVersion
+    # Remove-Item -Path $BuildDir -Recurse
+  # } -ArgumentList $WindowsVersion
 }
 
 function Install-AwsKubernetesNode {
@@ -118,7 +118,7 @@ function Install-NSSM {
     [parameter(Mandatory=$false)] $DownloadDirectory = (Join-Path -Path (Get-Item Env:TEMP).Value -ChildPath "nssm")
   )
 
-  # Start-Job -Name install-nssm -ScriptBlock {
+  Start-Job -Name install-nssm -ScriptBlock {
     $DownloadDirectory = $args[0]
     $InstallationDirectory = $args[1]
     $NssmVersion = $args[2]
@@ -130,8 +130,8 @@ function Install-NSSM {
 
     Move-Item -Path "$DownloadDirectory/nssm-$NssmVersion/win64/nssm.exe" -Destination "$InstallationDirectory/bin/nssm.exe" -Force
 
-    # Remove-Item -Path $DownloadDirectory -Recurse
-  # } -ArgumentList $DownloadDirectory,$InstallationDirectory,$NssmVersion
+    Remove-Item -Path $DownloadDirectory -Recurse
+  } -ArgumentList $DownloadDirectory,$InstallationDirectory,$NssmVersion
 }
 
 function New-KubernetesConfigurations {
