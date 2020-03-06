@@ -591,8 +591,8 @@ $KubeletConfig = @{
   "apiVersion"="kubelet.config.k8s.io/v1beta1";
   "kind"="KubeletConfiguration";
   "address"="0.0.0.0";
-  "port"="10250";
-  "readOnlyPort"="10255";
+  "port"=10250;
+  "readOnlyPort"=10255;
   "authorization"=@{
     "mode"="Webhook";
     "webhook"=@{
@@ -605,22 +605,22 @@ $KubeletConfig = @{
       "clientCAFile"="$KubernetesDirectory/kconfigs/issued/ca.crt";
     };
     "webhook"=@{
-      "enabled"="true";
+      "enabled"=$true;
       "cacheTTL"="2m0s";
     };
     "anonymous"=@{
-      "enabled"="false";
+      "enabled"=$false;
     };
   };
-  "enableDebuggingHandlers"="true";
+  "enableDebuggingHandlers"=$true;
   "clusterDomain"="$env:KubeDnsDomain";
   "clusterDNS"=@(
     "$env:KubeClusterDns"
   );
   "hairpinMode"="promiscuous-bridge";
-  "maxPods"="110";
+  "maxPods"=110;
   "featureGates"=@{
-    "WinOverlay"="true";
+    "WinOverlay"=$true;
   };
   "resolveConf"="";
 }
