@@ -27,6 +27,7 @@ function Install-DockerImages {
   )
 
   Start-Job -Name install-docker -ScriptBlock {
+    docker pull "mcr.microsoft.com/windows/nanoserver:$WindowsVersion"
     # Build our infrastructure image.
     $BuildDir = Join-Path -Path (Get-Item Env:TEMP).Value -ChildPath "docker"
     New-Item -Path $BuildDir -ItemType directory
@@ -36,7 +37,7 @@ function Install-DockerImages {
     docker build -t kubeletwin/pause -f $BuildDir/Dockerfile $BuildDir
 
     Remove-Item -Path $BuildDir -Recurse
-  } -ArgumentList $WindowsVersion,$WithServerCore
+  } -ArgumentList $WindowsVersion
 }
 
 function Install-AwsKubernetesNode {
