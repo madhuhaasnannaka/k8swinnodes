@@ -105,8 +105,8 @@ function Install-AwsKubernetesFlannel {
       -OutFile "$InstallationDirectory/cni/win-overlay.exe"
 
     # Create directories needed for runtime.
-    New-Item -Path "c:/etc/kube-flannel" -ItemType directory -ErrorAction Ignore
-    New-Item -Path "c:/run/flannel" -ItemType directory -ErrorAction Ignore
+    New-Item -Path "$KubernetesDrive/etc/kube-flannel" -ItemType directory -ErrorAction Ignore
+    New-Item -Path "$KubernetesDrive/run/flannel" -ItemType directory -ErrorAction Ignore
     Remove-Item -Path $DownloadDirectory -Recurse
   } -ArgumentList $DownloadDirectory,$InstallationDirectory,$DownloadBranch,$FlanneldVersion
 }
@@ -118,7 +118,7 @@ function Install-NSSM {
     [parameter(Mandatory=$false)] $DownloadDirectory = (Join-Path -Path (Get-Item Env:TEMP).Value -ChildPath "nssm")
   )
 
-  Start-Job -Name install-nssm -ScriptBlock {
+  # Start-Job -Name install-nssm -ScriptBlock {
     $DownloadDirectory = $args[0]
     $InstallationDirectory = $args[1]
     $NssmVersion = $args[2]
@@ -130,8 +130,8 @@ function Install-NSSM {
 
     Move-Item -Path "$DownloadDirectory/nssm-$NssmVersion/win64/nssm.exe" -Destination "$InstallationDirectory/bin/nssm.exe" -Force
 
-    Remove-Item -Path $DownloadDirectory -Recurse
-  } -ArgumentList $DownloadDirectory,$InstallationDirectory,$NssmVersion
+    # Remove-Item -Path $DownloadDirectory -Recurse
+  # } -ArgumentList $DownloadDirectory,$InstallationDirectory,$NssmVersion
 }
 
 function New-KubernetesConfigurations {
@@ -237,7 +237,7 @@ function Update-NetConfigurationFile {
     [parameter(Mandatory=$false)] $KubeClusterCidr = $env:KubeClusterCidr
   )
 
-  $NetConfigurationFile = "c:/etc/kube-flannel/net-conf.json"
+  $NetConfigurationFile = "$KubernetesDrive/etc/kube-flannel/net-conf.json"
 
   $Configuration = @{
     "Network"="$KubeClusterCidr"
