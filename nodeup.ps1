@@ -4,7 +4,7 @@
 # will be explained down.
 param(
   [parameter(Mandatory=$true)] $KopsStateStoreRegion = "eu-west-1",
-  [parameter(Mandatory=$false)] [switch] $AutoGenerateWindowsTaints = $true
+  [parameter(Mandatory=$false)] [switch] $AutoGenerateWindowsTaints = $false
 )
 
 # Define some of our constants.
@@ -217,14 +217,6 @@ function Get-NodeKeysetFromTags {
     return $_.Key.replace("$Prefix/", "") + "=" + $_.Value
   }
   return $tags
-}
-
-function Get-NodeLabelsFromTags {
-  param(
-    [parameter(Mandatory=$false)] $Prefix = "k8s.io/cluster-autoscaler/node-template/label",
-    [parameter(Mandatory=$false)] $Tags = $script:Ec2Tags
-  )
-  return (Get-NodeKeysetFromTags -Prefix $Prefix -Tags $Tags)
 }
 
 function Get-NodeTaintsFromTags {
@@ -482,18 +474,9 @@ $NetworkHostIpAddress = $NetworkDefaultInterface.IPv4Address.IPAddress
 
 # Get taints and role from the cluster specification.
 $NodeTaints = @(Get-NodeTaintsFromTags)
-$NodeLabels = @(Get-NodeLabelsFromTags)
-
-# Add our own labels and taints.
-# Disabled
-# $NodeLabels += @(
-#   "kubernetes.io/os-version=$($ComputerInfo.WindowsVersion)",
-#   "kubernetes.io/role=node"
-# )
 
 if($AutoGenerateWindowsTaints) {
   $NodeTaints += @(
-    "kubernetes.io/os=windows:NoSchedule",
     "kubernetes.io/os-version=$($ComputerInfo.WindowsVersion):NoSchedule"
   )
 }
@@ -503,9 +486,7 @@ $NodeTaints += @("node.kubernetes.io/NotReady=:NoSchedule")
 
 # Join labels and taints into a single string.
 $NodeTaints = $NodeTaints -Join ""","""
-$NodeLabels = $NodeLabels -Join ""","""
 $NodeTaints = """$NodeTaints"""
-$NodeLabels = """$NodeLabels"""
 
 # Go ahead install Docker credentials for AWS.
 $env:DOCKER_CONFIG = "c:/.docker"
@@ -639,7 +620,6 @@ $KubeletArguments = @{
   "kubeconfig"="$KubernetesDirectory/kconfigs/kubelet.kcfg";
   "network-plugin"="cni";
   "node-ip"="$NetworkHostIpAddress";
-  "node-labels"="$NodeLabels";
   "non-masquerade-cidr"="$env:KubeNonMasqueradeCidr";
   "pod-infra-container-image"="kubeletwin/pause";
   "register-schedulable"="true";
