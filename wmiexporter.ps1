@@ -8,7 +8,7 @@ wget "https://github.com/martinlindhe/wmi_exporter/releases/download/v$Version/w
 
 $logFile = "c:/wmi_install.log"
 $file = Get-Item -Path "$DownloadDirectory/wmi.msi"
-$MSIArguments = @("/i", ('"{0}"' -f $file.fullname), "/qn", "/L*v", $logFile, "ENABLED_COLLECTORS=cpu,cs,container,logical_disk,net,os,service,system,tcp")
-Start-Process "msiexec.exe" -ArgumentList $MSIArguments
+$MSIArguments = @("/i", ('"{0}"' -f $file.fullname), "/qn", "/L*v", $logFile, 'ENABLED_COLLECTORS="cpu,cs,container,logical_disk,net,os,service,system,tcp"')
+Start-Process "msiexec.exe" -ArgumentList $MSIArguments -Wait
 
 Remove-Item -Path $DownloadDirectory -Recurse
