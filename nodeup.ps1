@@ -443,7 +443,7 @@ New-KubernetesConfigurations `
 # Download the pre-made flannel ServiceAccount Kubernetes configuaration file.
 Read-S3Object `
   -BucketName "$KopsStateStoreBucket" `
-  -Key "$KopsStateStorePrefix/serviceaccount/flannel.kcfg" `
+  -Key "$KopsStateStorePrefix/serviceaccounts/flannel.kcfg" `
   -File "$KubernetesDirectory/kconfigs/flannel.kcfg" `
   -Region $KopsStateStoreRegion
 
