@@ -19,6 +19,12 @@ foreach($asg in $AutoScalingGroups) {
     }
 }
 
+$LifecycleHook = Get-ASLifecycleHook -AutoScalingGroupName $AutoScalingGroup
+
+if(-not $LifecycleHook) {
+    Write-ASLifecycleHook -AutoScalingGroupName $AutoScalingGroup -LifecycleHookName 'nodedrainer' -LifecycleTransition 'autoscaling:EC2_INSTANCE_TERMINATING' -HeartbeatTimeout 240 -DefaultResult "CONTINUE"
+}
+
 while ($true) {
     try
     {
