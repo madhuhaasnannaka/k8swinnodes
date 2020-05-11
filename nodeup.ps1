@@ -33,7 +33,7 @@ function Install-DockerImages {
     $BuildDir = Join-Path -Path (Get-Item Env:TEMP).Value -ChildPath "docker"
     New-Item -Path $BuildDir -ItemType directory
     $DockerfileContents = "FROM mcr.microsoft.com/windows/nanoserver:$WindowsVersion`nCMD cmd /c ping -t localhost"
-    
+
     Set-Content -Path $BuildDir/Dockerfile -Value $DockerfileContents
     docker build -t kubeletwin/pause -f $BuildDir/Dockerfile $BuildDir
 
@@ -199,7 +199,7 @@ function New-KubernetesConfigurations {
           }
       );
     }
-    
+
     ConvertTo-Yaml $KubernetesConfigData | Set-Content -Path "$DestinationBaseDir/$KubernetesUser.kcfg"
     Remove-Item -Path $LocalUserFile -Force
   }
@@ -423,13 +423,13 @@ $KopsClusterSpecification = (Get-Content $KopsClusterSpecificationFile | Convert
 Remove-Item -Path $KopsClusterSpecificationFile -Force
 
 # Extract all necessary configuration items regarding the cluster.
-$KubeClusterCidr = ($KopsClusterSpecification.clusterCidr | Sort-Object -Unique)
-$KubeClusterDns = ($KopsClusterSpecification.clusterDNS | Sort-Object -Unique)
-$KubeClusterInternalApi = ($KopsClusterSpecification.masterInternalName | Sort-Object -Unique)
-$KubeDnsDomain = ($KopsClusterSpecification.clusterDnsDomain | Sort-Object -Unique)
-$KubeNonMasqueradeCidr = ($KopsClusterSpecification.nonMasqueradeCIDR | Sort-Object -Unique)
-$KubeServiceCidr = ($KopsClusterSpecification.serviceClusterIPRange | Sort-Object -Unique)
-$KubernetesVersion = ($KopsClusterSpecification.kubernetesVersion | Sort-Object -Unique)
+$KubeClusterCidr = ($KopsClusterSpecification.spec.kubeControllerManager.clusterCidr | Sort-Object -Unique)
+$KubeClusterDns = ($KopsClusterSpecification.spec.kubelet.clusterDNS | Sort-Object -Unique)
+$KubeClusterInternalApi = ($KopsClusterSpecification.spec.masterInternalName | Sort-Object -Unique)
+$KubeDnsDomain = ($KopsClusterSpecification.spec.clusterDnsDomain | Sort-Object -Unique)
+$KubeNonMasqueradeCidr = ($KopsClusterSpecification.spec.kubelet.nonMasqueradeCIDR | Sort-Object -Unique)
+$KubeServiceCidr = ($KopsClusterSpecification.spec.serviceClusterIPRange | Sort-Object -Unique)
+$KubernetesVersion = ($KopsClusterSpecification.spec.kubernetesVersion | Sort-Object -Unique)
 
 # Download Kubernetes configuration files for both the kubelet and kube-proxy users.
 New-KubernetesConfigurations `
@@ -466,7 +466,7 @@ $env:KubeNonMasqueradeCidr = $KubeNonMasqueradeCidr
 
 # Acquire additional network information for a later stage.
 $NetworkDefaultInterface = (
-  Get-NetIPConfiguration | 
+  Get-NetIPConfiguration |
   Where-Object {
     $_.IPv4DefaultGateway -ne $null -and
     $_.NetAdapter.Status -ne "Disconnected"
