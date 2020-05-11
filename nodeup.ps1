@@ -152,7 +152,7 @@ function New-KubernetesConfigurations {
 
   # Load the certificate authority data.
   $CertificateAuthorityData = ((Get-Content $LocalCertificateAuthorityFile) | ConvertFrom-Yaml)
-  $CertificateAuthorityCertificate = [System.Convert]::FromBase64String($CertificateAuthorityData.publicMaterial)
+  $CertificateAuthorityCertificate = [System.Convert]::FromBase64String($CertificateAuthorityData.spec.keys[0].publicMaterial)
   Set-Content -Path $DestinationBaseDir/issued/ca.crt -Value $CertificateAuthorityCertificate -Encoding Byte
   foreach($KubernetesUser in $KubernetesUsers) {
     Write-Host "generating kubeconfig for $KubernetesUser"
@@ -172,7 +172,7 @@ function New-KubernetesConfigurations {
       "clusters"=@(
           @{
               "cluster"=@{
-                  "certificate-authority-data"=$CertificateAuthorityData.publicMaterial;
+                  "certificate-authority-data"=$CertificateAuthorityData.spec.keys[0].publicMaterial;
                   "server"="https://$KubernetesMasterInternalName";
               };
               "name"="local";
@@ -193,8 +193,8 @@ function New-KubernetesConfigurations {
           @{
               "name"="$KubernetesUser";
               "user"=@{
-                  "client-certificate-data"=$KuberenetesUserData.publicMaterial;
-                  "client-key-data"=$KuberenetesUserData.privateMaterial;
+                  "client-certificate-data"=$KuberenetesUserData.spec.keys[0].publicMaterial;
+                  "client-key-data"=$KuberenetesUserData.spec.keys[0].privateMaterial;
               };
           }
       );
@@ -420,7 +420,7 @@ Import-Module powershell-yaml
 
 # Parse the YAML cluster specification file into a PowerShell object and remove the file.
 $KopsClusterSpecification = (Get-Content $KopsClusterSpecificationFile | ConvertFrom-Yaml 2>&1)
-Remove-Item -Path $KopsClusterSpecificationFile -Force
+#Remove-Item -Path $KopsClusterSpecificationFile -Force
 
 # Extract all necessary configuration items regarding the cluster.
 $KubeClusterCidr = ($KopsClusterSpecification.spec.kubeControllerManager.clusterCidr | Sort-Object -Unique)
@@ -547,8 +547,8 @@ route ADD 169.254.169.254 MASK 255.255.255.255 $NetworkDefaultGateway /p
 # Wait for the network to stabilize, usually takes about five to ten seconds.
 kubectl get nodes --kubeconfig="$KubernetesDirectory/kconfigs/kubelet.kcfg" 2>&1 | Out-Null
 while($? -eq $false) {
+  Write-Host "Waiting for connectivity with the cluster..."
   Start-Sleep 1
-  # Use `kubectl get nodes` to just test the connectivity to the cluster.
   kubectl get nodes --kubeconfig="$KubernetesDirectory/kconfigs/kubelet.kcfg" 2>&1 | Out-Null
 }
 
