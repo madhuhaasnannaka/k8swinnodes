@@ -70,7 +70,7 @@ function Install-AwsKubernetesNode {
 function Install-AwsKubernetesFlannel {
   param (
     [parameter(Mandatory=$true)] $InstallationDirectory,
-    [parameter(Mandatory=$false)] $FlanneldVersion = "0.12.0",
+    [parameter(Mandatory=$false)] $FlanneldVersion = "0.11.0",
     [parameter(Mandatory=$false)] $DownloadBranch = "master",
     [parameter(Mandatory=$false)] $DownloadDirectory = (Join-Path -Path (Get-Item Env:TEMP).Value -ChildPath "flannel")
   )
@@ -277,12 +277,23 @@ function Update-CniConfigurationFile {
     }
     "delegate"=@{
       "type"="win-overlay"
+      "dns"=@{
+        "Nameservers"=@(
+          "$KubeClusterDns"
+        )
+        "Search"=@(
+          "$KubeDnsSuffix"
+        )
+      }
       "policies"=@(
         @{
           "Name"="EndpointPolicy"
           "Value"=@{
             "Type"="OutBoundNAT"
             "ExceptionList"=@(
+              $KubeClusterCidr,
+              $KubeServiceCidr,
+              $KubeClusterDns
             )
           }
         },
@@ -290,7 +301,7 @@ function Update-CniConfigurationFile {
           "Name"="EndpointPolicy"
           "Value"=@{
             "Type"="ROUTE"
-            "DestinationPrefix"=""
+            "DestinationPrefix"=$KubeServiceCidr
             "NeedEncap"=$true
           }
         }
