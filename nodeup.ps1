@@ -291,7 +291,8 @@ function Update-CniConfigurationFile {
           "Value"=@{
             "Type"="OutBoundNAT"
             "ExceptionList"=@(
-              $KubeClusterCidr
+              $KubeClusterCidr,
+              $KubeServiceCidr
             )
           }
         },
@@ -432,6 +433,7 @@ $KubeDnsDomain = ($KopsClusterSpecification.spec.clusterDnsDomain | Sort-Object 
 $KubeNonMasqueradeCidr = ($KopsClusterSpecification.spec.nonMasqueradeCIDR | Sort-Object -Unique)
 $KubeServiceCidr = ($KopsClusterSpecification.spec.serviceClusterIPRange | Sort-Object -Unique)
 $KubernetesVersion = ($KopsClusterSpecification.spec.kubernetesVersion | Sort-Object -Unique)
+$KubeProxyClusterCidr = ($KopsClusterSpecification.spec.kubeProxy.clusterCIDR | Sort-Object -Unique)
 
 # Download Kubernetes configuration files for both the kubelet and kube-proxy users.
 New-KubernetesConfigurations `
@@ -465,6 +467,7 @@ $env:KubeDnsDomain = $KubeDnsDomain
 $env:KubeNonMasqueradeCidr = $KubeNonMasqueradeCidr
 $env:KubeServiceCidr = $KubeServiceCidr
 $env:KubeNonMasqueradeCidr = $KubeNonMasqueradeCidr
+$env:KubeProxyClusterCidr = $KubeProxyClusterCidr
 
 # Acquire additional network information for a later stage.
 $NetworkDefaultInterface = (
@@ -644,7 +647,7 @@ $FlannelArguments = @{
 
 $KubeProxyArguments = @{
   "v"="4";
-  "cluster-cidr"="$env:KubeClusterCidr";
+  "cluster-cidr"="$env:KubeProxyClusterCidr";
   "enable-dsr"="false";
   "feature-gates"="""WinOverlay=true""";
   "hostname-override"="$env:NODE_NAME";
