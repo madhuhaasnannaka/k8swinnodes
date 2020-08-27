@@ -288,8 +288,7 @@ function Update-CniConfigurationFile {
           "Value"=@{
             "Type"="OutBoundNAT"
             "ExceptionList"=@(
-              $KubeClusterCidr,
-              $KubeServiceCidr
+              $KubeClusterCidr
             )
           }
         },
@@ -423,11 +422,11 @@ $KopsClusterSpecification = (Get-Content $KopsClusterSpecificationFile | Convert
 #Remove-Item -Path $KopsClusterSpecificationFile -Force
 
 # Extract all necessary configuration items regarding the cluster.
-$KubeClusterCidr = ($KopsClusterSpecification.spec.kubeControllerManager.clusterCidr | Sort-Object -Unique)
+$KubeClusterCidr = ($KopsClusterSpecification.spec.nonMasqueradeCIDR | Sort-Object -Unique)
 $KubeClusterDns = ($KopsClusterSpecification.spec.kubelet.clusterDNS | Sort-Object -Unique)
 $KubeClusterInternalApi = ($KopsClusterSpecification.spec.masterInternalName | Sort-Object -Unique)
 $KubeDnsDomain = ($KopsClusterSpecification.spec.clusterDnsDomain | Sort-Object -Unique)
-$KubeNonMasqueradeCidr = ($KopsClusterSpecification.spec.kubelet.nonMasqueradeCIDR | Sort-Object -Unique)
+$KubeNonMasqueradeCidr = ($KopsClusterSpecification.spec.nonMasqueradeCIDR | Sort-Object -Unique)
 $KubeServiceCidr = ($KopsClusterSpecification.spec.serviceClusterIPRange | Sort-Object -Unique)
 $KubernetesVersion = ($KopsClusterSpecification.spec.kubernetesVersion | Sort-Object -Unique)
 
