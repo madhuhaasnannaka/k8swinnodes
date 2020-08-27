@@ -232,7 +232,7 @@ function Get-NodeTaintsFromTags {
 
 function Update-NetConfigurationFile {
   param(
-    [parameter(Mandatory=$false)] $NetworkName = "vxlan0",
+    [parameter(Mandatory=$false)] $NetworkName = "cbr0",
     [parameter(Mandatory=$false)] $NetworkMode = "vxlan",
     [parameter(Mandatory=$false)] $KubeClusterCidr = $env:KubeClusterCidr
   )
@@ -258,7 +258,7 @@ function Update-NetConfigurationFile {
 function Update-CniConfigurationFile {
   param(
     [parameter(Mandatory=$false)] $KubernetesDirectory = $script:KubernetesDirectory,
-    [parameter(Mandatory=$false)] $NetworkName = "vxlan0",
+    [parameter(Mandatory=$false)] $NetworkName = "cbr0",
     [parameter(Mandatory=$false)] $KubeDnsSuffix = "svc.cluster.local",
     [parameter(Mandatory=$false)] $KubeClusterCidr = $env:KubeClusterCidr,
     [parameter(Mandatory=$false)] $KubeServiceCidr = $env:KubeServiceCidr,
@@ -319,7 +319,7 @@ function Update-CniConfigurationFile {
 function Get-SourceVip {
   param(
     [parameter(Mandatory=$true)] $IpAddress,
-    [parameter(Mandatory=$false)] $NetworkName = "vxlan0",
+    [parameter(Mandatory=$false)] $NetworkName = "cbr0",
     [parameter(Mandatory=$false)] $KubernetesDirectory = $script:KubernetesDirectory
   )
 
