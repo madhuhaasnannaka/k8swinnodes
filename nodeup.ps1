@@ -272,6 +272,9 @@ function Update-CniConfigurationFile {
     "cniVersion"="0.2.0"
     "name"="$NetworkName"
     "type"="flannel"
+    "capabilities"=@{
+      "dns"=$true
+    }
     "delegate"=@{
       "type"="win-overlay"
       "dns"=@{
