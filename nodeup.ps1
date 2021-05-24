@@ -3,7 +3,7 @@
 # There are a few pre-requisites in order for this script to work, as well as a few "best practices", all of which
 # will be explained down.
 param(
-  [parameter(Mandatory=$true)] $KopsStateStoreRegion = "us-west-2",
+  [parameter(Mandatory=$true)] $KopsStateStoreRegion = "us-east-1",
   [parameter(Mandatory=$false)] [switch] $AutoGenerateWindowsTaints = $false,
   [parameter(Mandatory=$false)] $KubernetesDrive = "c:"
 )
@@ -444,12 +444,17 @@ New-KubernetesConfigurations `
   -KopsStateStoreRegion $KopsStateStoreRegion `
   -KubernetesUsers kubelet,kube-proxy
 
+Write-Output "$KopsStateStoreBucket"
+Write-Output "$KopsStateStorePrefix/serviceaccounts/flannel.kcfg"
+Write-Output "$KopsStateStoreRegion"
 # Download the pre-made flannel ServiceAccount Kubernetes configuaration file.
 Read-S3Object `
   -BucketName "$KopsStateStoreBucket" `
   -Key "$KopsStateStorePrefix/serviceaccounts/flannel.kcfg" `
   -File "$KubernetesDirectory/kconfigs/flannel.kcfg" `
   -Region $KopsStateStoreRegion
+
+
 
 Install-AwsKubernetesFlannel -InstallationDirectory $KubernetesDirectory
 Install-AwsKubernetesNode -KubernetesVersion $KubernetesVersion -InstallationDirectory $KubernetesDirectory
@@ -510,8 +515,8 @@ Get-Job | Wait-Job
 Import-Module "$KubernetesDirectory/hns.psm1"
 
 # Get the name of the flannel overlap network.
-$FlannelConfigMap = (kubectl --kubeconfig="$KubernetesDirectory/kconfigs/flannel.kcfg" get configmaps -n kube-system kube-flannel-cfg -ojson | ConvertFrom-Json)
-$FlannelCniConfiguration = ($FlannelConfigMap.data.'cni-conf.json' | ConvertFrom-Json)
+$FlannelConfigMap = (kubectl --kubeconfig="$KubernetesDirectory/kconfigs/flannel.kcfg" get configmaps -n kube-system canal-config -ojson | ConvertFrom-Json)
+$FlannelCniConfiguration = ($FlannelConfigMap.data.'cni_network_config' | ConvertFrom-Json)
 $env:KUBE_NETWORK = $FlannelCniConfiguration.name
 
 # Create an overlay network to trigger a vSwitch creation.
