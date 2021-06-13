@@ -450,7 +450,7 @@ Write-Output "$KopsStateStoreRegion"
 # Download the pre-made flannel ServiceAccount Kubernetes configuaration file.
 Read-S3Object `
   -BucketName "$KopsStateStoreBucket" `
-  -Key "$KopsStateStorePrefix/serviceaccounts/flannel.kcfg" `
+  -Key "$KopsStateStorePrefix/serviceaccount/flannel.kcfg" `
   -File "$KubernetesDirectory/kconfigs/flannel.kcfg" `
   -Region $KopsStateStoreRegion
 
