@@ -327,7 +327,7 @@ function Get-SourceVip {
   $subnet = $hnsNetwork.Subnets[0].AddressPrefix
 
   $IpamConfig = @{
-    "cniVersion"="0.2.0"
+    "cniVersion"="0.12.0"
     "name"="$NetworkName"
     "ipam"=@{
       "type"="host-local"
