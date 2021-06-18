@@ -70,7 +70,7 @@ function Install-AwsKubernetesNode {
 function Install-AwsKubernetesFlannel {
   param (
     [parameter(Mandatory=$true)] $InstallationDirectory,
-    [parameter(Mandatory=$false)] $FlanneldVersion = "0.11.0",
+    [parameter(Mandatory=$false)] $FlanneldVersion = "0.14.0",
     [parameter(Mandatory=$false)] $DownloadBranch = "master",
     [parameter(Mandatory=$false)] $DownloadDirectory = (Join-Path -Path (Get-Item Env:TEMP).Value -ChildPath "flannel")
   )
@@ -269,7 +269,7 @@ function Update-CniConfigurationFile {
   $CniConfigurationFile = "$KubernetesDirectory/cni/config/cni.conf"
 
   $Configuration = @{
-    "cniVersion"="0.2.0"
+    "cniVersion"="0.12.0"
     "name"="$NetworkName"
     "type"="flannel"
     "capabilities"=@{
