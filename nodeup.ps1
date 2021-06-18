@@ -269,7 +269,7 @@ function Update-CniConfigurationFile {
   $CniConfigurationFile = "$KubernetesDirectory/cni/config/cni.conf"
 
   $Configuration = @{
-    "cniVersion"="0.9.1"
+    "cniVersion"="0.2.0"
     "name"="$NetworkName"
     "type"="flannel"
     "capabilities"=@{
@@ -327,7 +327,7 @@ function Get-SourceVip {
   $subnet = $hnsNetwork.Subnets[0].AddressPrefix
 
   $IpamConfig = @{
-    "cniVersion"="0.9.1"
+    "cniVersion"="0.2.0"
     "name"="$NetworkName"
     "ipam"=@{
       "type"="host-local"
